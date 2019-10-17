@@ -490,6 +490,47 @@ func TestPduToSample(t *testing.T) {
 				`label:<name:"test_metric" value:"3" > gauge:<value:1 > `:   `Desc{fqName: "test_metric", help: "Help string (EnumAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
 			},
 		},
+		{
+			pdu: &gosnmp.SnmpPDU{
+				Name:  "1.1",
+				Type:  gosnmp.Integer,
+				Value: 10,
+			},
+			metric: &config.Metric{
+				Name:       "test_metric",
+				Oid:        "1.1",
+				Type:       "BitfieldAsStateSet",
+				Help:       "Help string",
+				EnumValues: map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "qux"},
+			},
+			expectedMetrics: map[string]string{
+				`label:<name:"test_metric" value:"foo" > gauge:<value:0 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"bar" > gauge:<value:1 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"baz" > gauge:<value:0 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"qux" > gauge:<value:1 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+			},
+		},
+		{
+			pdu: &gosnmp.SnmpPDU{
+				Name:  "1.1",
+				Type:  gosnmp.Integer,
+				Value: 129,
+			},
+			metric: &config.Metric{
+				Name:       "test_metric",
+				Oid:        "1.1",
+				Type:       "BitfieldAsStateSet",
+				Help:       "Help string",
+				EnumValues: map[int]string{1: "foo", 2: "bar", 3: "baz", 4: "qux"},
+			},
+			expectedMetrics: map[string]string{
+				`label:<name:"test_metric" value:"foo" > gauge:<value:1 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"bar" > gauge:<value:0 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"baz" > gauge:<value:0 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"qux" > gauge:<value:0 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+				`label:<name:"test_metric" value:"2^7" > gauge:<value:1 > `: `Desc{fqName: "test_metric", help: "Help string (BitfieldAsStateSet)", constLabels: {}, variableLabels: [test_metric]}`,
+			},
+		},
 	}
 
 	for i, c := range cases {
